@@ -16,5 +16,4 @@ async def create_instance(ctx: crescent.Context, msg: hikari.Message) -> None:
         await ctx.respond("No code blocks to run could be found.", ephemeral=True)
         return
 
-    await ctx.respond("Instance created.", ephemeral=True)
-    await inst.execute()
+    await inst.execute(interaction=ctx)

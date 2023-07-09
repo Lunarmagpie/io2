@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import contextlib
+import functools
 import typing as t
 from dataclasses import dataclass, field
 
@@ -390,7 +391,7 @@ class Instance:
 
         return rows
 
-    async def execute(self) -> None:
+    async def execute(self, interaction: crescent.Context | None = None) -> None:
         if not self.response:
             await plugin.app.rest.trigger_typing(self.channel)
 
@@ -424,10 +425,14 @@ class Instance:
                 self.channel, self.response, out, components=rows, attachment=att
             )
         else:
-            resp = await plugin.app.rest.create_message(
-                self.channel,
+            if interaction is not None:
+                resp_f = functools.partial(interaction.respond, ensure_message=True)
+            else:
+                resp_f = functools.partial(
+                    plugin.app.rest.create_message, self.channel, reply=self.message
+                )
+            resp = await resp_f(
                 out,
-                reply=self.message,
                 components=rows,
                 attachment=att or hikari.UNDEFINED,
                 user_mentions=[self.requester],
